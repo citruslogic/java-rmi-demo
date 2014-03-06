@@ -29,8 +29,8 @@ on which you'll be running the demo.
 
 
 To run the server, do:
-    rmiregistry &
 
+    rmiregistry &
     java -cp RMIProject.jar -Djava.security.policy=server.policy
                           -Djava.rmi.server.codebase=file:/c:/home/whatever/public_html/classes/
                           RMIServer
