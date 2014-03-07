@@ -15,6 +15,8 @@ import java.util.Scanner;
  */
 public class RMIClient {
 
+
+
     public static void main(String[] args) throws InterruptedException, IOException {
 
         byte choice;
@@ -23,13 +25,20 @@ public class RMIClient {
         if (System.getSecurityManager() == null)
             System.setSecurityManager(new SecurityManager());
 
+        if (args.length < 1) {
+            // tell the user he did not give an ip address.
+            System.err.println("No server to connect to, quitting.");
+            System.exit(1);
+        }
         /* first, issue the menu to the user.
            same as before.
          */
         while (true) {
 
-            System.out.println("RMI Client\nEnter your selection (1-7):\n"
-            + "=============================\n"
+            System.out.println("\nRMI Diagnostics Client\n"
+                    + " connecting to " + args[0] + "\n"
+                    + "\nEnter your selection (1-7):\n"
+            + "===================================\n"
             + "1. Host Current Date and Time\n"
             + "2. Host uptime\n"
             + "3. Host memory use\n"
@@ -37,6 +46,7 @@ public class RMIClient {
             + "5. Host current users\n"
             + "6. Host running processes\n"
             + "7. Quit\n"
+            + "===================================\n"
             + "\n");
 
             Scanner kb = new Scanner(System.in);
@@ -64,6 +74,11 @@ public class RMIClient {
             // get the number of client threads to spawn for testing.
             try {
                 nclients = kb.nextShort();
+
+                if (nclients < 1) {
+                    System.err.println("Less than 1 client is not allowed for this test.");
+                    continue;     // make the user start over from the menu.
+                }
             }  catch (InputMismatchException e) {
                 // the user should try again from the menu.
                 System.err.println("\nNot integer input! Try again with a number instead.\n");
@@ -83,8 +98,10 @@ public class RMIClient {
             for (ClientFactory clients : theClients) {
                 clients.clientThread.join();
             }
+            System.out.println("RMI Thread Processing Test finished for " + nclients + " threads.");
 
-            writeThreadLogFile(theClients, nclients);
+
+            writeThreadLogFile(theClients, nclients, choice);
 
         } // end while
     }   // end main
@@ -107,16 +124,17 @@ public class RMIClient {
 
         write the log file for every array of client threads.
      */
-    public static void writeThreadLogFile(ClientFactory[] clients, short nclients) throws IOException {
+    public static void writeThreadLogFile(ClientFactory[] clients, short nclients, byte choice) throws IOException {
 
-        DateFormat dateFormat = new SimpleDateFormat("MM/dd/YYYY HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
         Calendar calendar = Calendar.getInstance();
 
         PrintWriter logfile = new PrintWriter(new BufferedWriter(
                 new FileWriter("thread-elapsed-times.txt", true)));
 
-        logfile.println(dateFormat.format(calendar.getTime()) + "[total clients " + nclients + "]\n"
-                + "\t\tThread time (ms): " + "\t" + computeMeanTime(clients, nclients)
+        logfile.println(dateFormat.format(calendar.getTime()) + " [total clients " + nclients + "]\n"
+                + "Run option: " + choice
+                + "\tThread time (ms): " + "\t" + computeMeanTime(clients, nclients)
                 + "\n");
 
         // finished writing to file.

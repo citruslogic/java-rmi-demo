@@ -1,7 +1,5 @@
-import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.Scanner;
 
 /**
  * Created by Frank on 3/5/14.
@@ -10,15 +8,16 @@ import java.util.Scanner;
 public class ClientFactory implements Runnable {
 
     final private byte choice;          // menu option
-    final private String server;    // RMI registry
+    final private String server;        // RMI registry
     public final Thread clientThread;
 
     private volatile long elapsedTime;  // keep thread response time.
 
+
     public ClientFactory(byte choice, String server) {
 
         this.choice = choice;           // choice byte cannot be changed.
-        this.server = server;   // RMI registry to use.
+        this.server = server;           // RMI registry to use.
 
 
         clientThread = new Thread(this);
@@ -36,6 +35,7 @@ public class ClientFactory implements Runnable {
             TaskBuilder builder = (TaskBuilder) registry.lookup(name);
 
             // run a new diagnostic task on the RMI server.
+            System.out.println("Process output: ");
             Diagnostics task = new Diagnostics(makeCommand(choice));
 
             // show the program output to the user.
@@ -52,30 +52,29 @@ public class ClientFactory implements Runnable {
     } // end RMI client thread
 
 
-    public String makeCommand(byte choice) throws IOException {
+    private String makeCommand(byte choice) {
 
-        String fullcommand, args;
-
+        String command;
 
         switch (choice) {
 
             case 6:
-                fullcommand = "ps";
+                command = "ps -ef";
                 break;
             case 5:
-                fullcommand = "who";
+                command = "who";
                 break;
             case 4:
-                fullcommand = "netstat";
+                command = "netstat -n";
                 break;
             case 3:
-                fullcommand = "free";
+                command = "free -h";
                 break;
             case 2:
-                fullcommand = "uptime";
+                command = "uptime";
                 break;
             case 1:
-                fullcommand = "date";
+                command = "date";
                 break;
             default:
                 throw new IllegalArgumentException("Not an accepted command.");
@@ -83,20 +82,14 @@ public class ClientFactory implements Runnable {
 
         }  // end switch on command
 
-        System.out.println("Add any extra arguments for " + fullcommand + ": ");
 
-        Scanner getArgs = new Scanner(System.in);
-
-        // get the list of arguments from the user.
-        args = getArgs.nextLine();
-
-
-        return fullcommand + " " + args.trim();
+        return command;
     } // end makeCommand
 
     public long getElapsedTime() {
 
         return elapsedTime;
     }
+
 
 } // end ClientFactory class
